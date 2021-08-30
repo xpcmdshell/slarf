@@ -87,6 +87,8 @@ func initializeSlackClient(token string, dCookie string) (*slack.Client, error) 
 func main() {
 	var file *os.File
 	var err error
+	var encoder *json.Encoder
+
 	authToken := flag.String("token", "", "xoxc auth token")
 	authCookie := flag.String("cookie", "", "'d' auth cookie")
 	outFile := flag.String("outfile", "", "File path to save result in")
@@ -110,16 +112,14 @@ func main() {
 	if err != nil {
 		log.Fatalf("[-] Failed to fetch workspace users: %v", err)
 	}
-	if file != nil {
-		encoder := json.NewEncoder(file)
-		err = encoder.Encode(users)
-		if err != nil {
-			log.Fatalf("[-] Failed to export results as json: %v", err)
-		}
-	} else {
-		fmt.Printf("%+v\n", users)
-	}
 
-	// All finished
-	fmt.Printf("[+] Exported %d users\n", len(users))
+	if file != nil {
+		encoder = json.NewEncoder(file)
+	} else {
+		encoder = json.NewEncoder(os.Stdout)
+	}
+	err = encoder.Encode(users)
+	if err != nil {
+		log.Fatalf("[-] Failed to export results as json: %v", err)
+	}
 }
